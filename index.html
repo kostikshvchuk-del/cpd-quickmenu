@@ -378,19 +378,52 @@
             return JSON.stringify(template);
         }
         
+        function fallbackCopy(text) {
+            const area = document.createElement('textarea');
+            area.value = text;
+            area.setAttribute('readonly', '');
+            area.style.position = 'fixed';
+            area.style.top = '-1000px';
+            document.body.appendChild(area);
+            area.select();
+            let ok = false;
+            try {
+                ok = document.execCommand('copy');
+            } catch (e) {
+                ok = false;
+            }
+            document.body.removeChild(area);
+            return ok ? Promise.resolve() : Promise.reject(new Error('copy failed'));
+        }
+
+        function copyText(text) {
+            if (navigator.clipboard && window.isSecureContext) {
+                return navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+            }
+            return fallbackCopy(text);
+        }
+
         function generateAndCopy(event) {
             const minifiedJSON = generateJSON();
             document.getElementById('jsonOutput').textContent = minifiedJSON;
-            
-            navigator.clipboard.writeText(minifiedJSON).then(() => {
-                const btn = event.target;
-                const originalText = btn.textContent;
+
+            const btn = event.currentTarget || event.target;
+            const originalText = btn.dataset.label || btn.textContent;
+            btn.dataset.label = originalText;
+
+            copyText(minifiedJSON).then(() => {
                 btn.textContent = '✅ Скопировано!';
                 setTimeout(() => {
                     btn.textContent = originalText;
                 }, 2000);
-            }).catch(err => {
-                alert('Ошибка копирования: ' + err);
+            }).catch(() => {
+                const out = document.getElementById('jsonOutput');
+                const range = document.createRange();
+                range.selectNodeContents(out);
+                const selection = window.getSelection();
+                selection.removeAllRanges();
+                selection.addRange(range);
+                alert('Не удалось скопировать автоматически. JSON уже выделен — нажмите Ctrl+C (Cmd+C на Mac).');
             });
         }
         
