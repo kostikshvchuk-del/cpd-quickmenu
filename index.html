@@ -176,10 +176,6 @@
             margin-top: 5px;
         }
         
-        .hidden {
-            display: none;
-        }
-
         .gender-switch {
             display: flex;
             align-items: center;
@@ -266,44 +262,9 @@
             </div>
         </div>
         
-        <div class="row">
-            <div class="form-group">
-                <label>🏢 Отдел</label>
-                <select id="department">
-                    <option value="Security Department">Security Department (@SD)</option>
-                    <option value="Voluntary People's Squads">Voluntary People's Squads (@VPS)</option>
-                    <option value="Department of Criminology">Department of Criminology (@DoC)</option>
-                    <option value="Supply Department">Supply Department (@SOC)</option>
-                    <option value="Senior Staff CPD">Senior Staff CPD (@SSC)</option>
-                    <option value="Отсутствует">Отсутствует</option>
-                </select>
-                <div class="note" id="departmentDesc">Выберите отдел, чтобы увидеть описание.</div>
-            </div>
-            <div class="form-group">
-                <label>📅 Дата выдачи</label>
-                <input type="date" id="issueDate">
-            </div>
-        </div>
-        
-        <div id="departmentFields">
-            <div class="row">
-                <div class="form-group">
-                    <label>📋 Должность в отделе</label>
-                    <input type="text" id="positionInDepartment" placeholder="Рядовой отдела">
-                    <div class="note">Ваша должность внутри отдела</div>
-                </div>
-                <div class="form-group">
-                    <label>✍️ Подпись Главы Отдела</label>
-                    <input type="text" id="headSign" placeholder="slbw / KUCH">
-                    <div class="note">Подпись руководителя вашего отдела</div>
-                </div>
-            </div>
-        </div>
-        
         <div class="form-group">
-            <label>✍️ Подпись Шерифа</label>
-            <input type="text" id="sheriffSign" placeholder="RENJ" value="RENJ">
-            <div class="note">Никнейм или подпись шерифа</div>
+            <label>📅 Дата выдачи</label>
+            <input type="date" id="issueDate">
         </div>
         
         <div>
@@ -327,43 +288,9 @@
     </div>
 
     <script>
-        const departmentSelect = document.getElementById('department');
-        const departmentFields = document.getElementById('departmentFields');
-        
-        const departmentDescriptions = {
-            "Security Department": "[Security Department] или SD - отдел CPD, занимающийся охраной зданий государственных структур и высокопоставленных личностей штата. Сотрудники обязаны первыми прибывать для охраны и на наборы в госструктуры по вызову.",
-            "Voluntary People's Squads": "[Voluntary People's Squads] - обучение сержантов и рядовых (с лейтенанта). Задача: обучать младший состав уставу, строю и пониманию сферы CPD.",
-            "Department of Criminology": "[Department of Criminology] или DoC - отдел CPD, занимающийся экспертизами, снятием отпечатков с вещдоказательств и поиском улик на месте преступлений.",
-            "Supply Department": "Следит за складом, пополняет его и выдает маты составу (с лейтенанта).",
-            "Senior Staff CPD": "[Senior Staff CPD] - старший состав CPD (с начальником спецназа)."
-        };
-
-        function toggleDepartmentFields() {
-            const desc = departmentDescriptions[departmentSelect.value] || 'Выберите отдел, чтобы увидеть описание.';
-            document.getElementById('departmentDesc').textContent = desc;
-
-            if (departmentSelect.value === 'Отсутствует') {
-                departmentFields.classList.add('hidden');
-            } else {
-                departmentFields.classList.remove('hidden');
-            }
-        }
-        
-        departmentSelect.addEventListener('change', toggleDepartmentFields);
-        toggleDepartmentFields();
-        
         function generateJSON() {
             const rpName = document.getElementById('rpName').value || "Джон Смит";
             const position = document.getElementById('position').value;
-            const department = document.getElementById('department').value;
-            const sheriffSign = document.getElementById('sheriffSign').value || "RENJ";
-            const noDepartmentText = "Отсутствует";
-            const positionInDepartment = department === noDepartmentText
-                ? noDepartmentText
-                : document.getElementById('positionInDepartment').value || "Patrol Officer";
-            const headSign = department === noDepartmentText
-                ? noDepartmentText
-                : document.getElementById('headSign').value || "Chief";
             
             const issueDateRaw = document.getElementById('issueDate').value;
             let issueDate = issueDateRaw;
@@ -374,26 +301,13 @@
                 issueDate = issueDateRaw.split('-').reverse().join('.');
             }
             
-            const departmentCodes = {
-                "Security Department": "SD",
-                "Voluntary People's Squads": "VPS",
-                "Department of Criminology": "DoC",
-                "Supply Department": "SOC",
-                "Senior Staff CPD": "SSC",
-                "Отсутствует": noDepartmentText
-            };
-            const departmentCode = departmentCodes[department] || "";
-            const extraDepartmentInfo = department === noDepartmentText
-                ? ""
-                : ` | ${positionInDepartment} | ${headSign}`;
-            
             // Пол персонажа: подставляем мужские или женские формы глаголов
             const female = document.querySelector('input[name="gender"]:checked').value === 'female';
             const g = (male, femaleText) => (female ? femaleText : male);
 
             let template = [
                 {"name":"Приветствие","actions":[["cmd","Здравия желаю, чем могу помочь?"]],"icon":"minecraft:oak_sign","customModelData":0,"keybind":[]},
-                {"name":"Удостоверение","actions":[["cmd",g("/mee вытаскивает удостоверение из кармана, показав СУ, захлопнул документ и положил обратно в карман","/mee вытаскивает удостоверение из кармана, показав СУ, захлопнула документ и положила обратно в карман")],["cmd",`/do На бронежилете висит золотой жетон CPD. Информация в удостоверении: ИФ: ${rpName} | Организация: CPD | Должность: ${position} | Отдел: ${departmentCode}${extraDepartmentInfo} | Дата выдачи: ${issueDate} | Печать CPD | ${sheriffSign}`]],"icon":"minecraft:knowledge_book","customModelData":0,"keybind":[]},
+                {"name":"Удостоверение","actions":[["cmd",g("/mee вытаскивает удостоверение из кармана, показав СУ, захлопнул документ и положил обратно в карман","/mee вытаскивает удостоверение из кармана, показав СУ, захлопнула документ и положила обратно в карман")],["cmd",`/do На бронежилете висит золотой жетон CPD. Информация в удостоверении: ИФ: ${rpName} | Организация: CPD | Должность: ${position} | Дата выдачи: ${issueDate} | Печать CPD`]],"icon":"minecraft:knowledge_book","customModelData":0,"keybind":[]},
                 {"name":"Миранда","actions":[["cmd","Вы имеете право хранить молчание. Всё, что вы скажете, может и будет использовано против вас. Вы имеете право на один телефонный звонок длительностью до 3-х минут, а также на государственного адвоката. Вам ясны ваши права?"]],"icon":"minecraft:iron_bars","customModelData":0,"keybind":[]},
                 {"name":"Вызовы","actions":[["cmd","/calls"]],"icon":"minecraft:redstone_torch","customModelData":0,"keybind":[]},
                 {"name":"Включить мигалки","actions":[["cmd","/mee Нажав на зеленую кнопку рядом с рулем, вместе с громким звуком загорелись сине-красные мигалки."]],"icon":"minecraft:cherry_leaves","customModelData":0,"keybind":[]},
@@ -415,7 +329,7 @@
                 {"name":"Поставить дверь на место","actions":[["cmd",g("/mee подошёл к двери, затем поставил её в исходное положение, после чего прикрутил болтами","/mee подошла к двери, затем поставила её в исходное положение, после чего прикрутила болтами")]],"icon":"minecraft:diamond_axe","customModelData":0,"keybind":[]},
                 {"name":"Обыск","actions":[["cmd",g("/me достал перчатки из заднего кармана, после чего натянул их на обе руки, после провел руками по верхним частям тела в области груди и рук, затем провел руками по туловищу нижним частям тела в области пояса, карманов и ног","/me достала перчатки из заднего кармана, после чего натянула их на обе руки, после провела руками по верхним частям тела в области груди и рук, затем провела руками по туловищу нижним частям тела в области пояса, карманов и ног")]],"icon":"minecraft:spider_eye","customModelData":0,"keybind":[]},
                 {"name":"Выдать разрешение [Мэрия]","actions":[["cmd","/mee хватает с полки листочек с печатью CPD, осматривает его."],["cmd","/mee кладёт листочек \"Разрешение на перевозку сотрудников правительства\" на стол, растёгивает пуговицу пиджака, вытаскивает ручку."],["cmd","/mee ставит свою подпись на листочке, прячет ручку в карман пиджака, застёгивает пуговицу."],["cmd","/n по рп лист возьми"]],"icon":"minecraft:book","customModelData":0,"keybind":[]},
-                {"name":"Выдать бланк теста ПДД","actions":[["cmd","/mee хватает со стола листочек \"Тест на знание правил ПДД\", осматривает его."],["cmd","/mee растёгивает пуговицу пиджака, вытаскивает ручку."],["cmd","/mee ставит подпись ${sheriffSign} на листочке, прячет ручку в кармане пиджака, застёгивает пуговицу."]],"icon":"minecraft:oak_sign","customModelData":0,"keybind":[]},
+                {"name":"Выдать бланк теста ПДД","actions":[["cmd","/mee хватает со стола листочек \"Тест на знание правил ПДД\", осматривает его."],["cmd","/mee растёгивает пуговицу пиджака, вытаскивает ручку."],["cmd","/mee ставит подпись на листочке, прячет ручку в кармане пиджака, застёгивает пуговицу."]],"icon":"minecraft:oak_sign","customModelData":0,"keybind":[]},
                 {"name":"Спавн полицейской машины","actions":[["cmd","/veh spawn open police"]],"icon":"minecraft:redstone_block","customModelData":0,"keybind":[]},
                 {"name":"Извлечение пули","actions":[["cmd","/mee достав и полицейского подсумка стерильные перчатки надевает их и начинает осматривать рану пациента"],["cmd","/mee протерев спиртовой салфеткой место раны, антисептик начинает обрабатывать рану, затем засовывает свою руку внутрь раны и достает оттуда пулю"],["cmd","/mee выбрасывает патрон который только что вынял из раны в человеке на пол"],["cmd","/do Рана зашита и пуля больше не в человеке."],["cmd","/mee берет бинт начинает перебинтовывать рану"],["cmd","/do Рана перебинтована."]],"icon":"minecraft:redstone_block","customModelData":0,"keybind":[]},
                 {"name":"Отмена всех задач","actions":[["cmd","/n cancel all"]],"icon":"minecraft:barrier","customModelData":0,"keybind":[]},
@@ -522,14 +436,9 @@
         function resetForm() {
             document.getElementById('rpName').value = '';
             document.getElementById('position').value = 'Рядовой';
-            document.getElementById('department').value = 'Security Department';
-            document.getElementById('sheriffSign').value = 'RENJ';
-            document.getElementById('positionInDepartment').value = '';
-            document.getElementById('headSign').value = '';
             document.getElementById('issueDate').valueAsDate = new Date();
             document.querySelector('input[name="gender"][value="male"]').checked = true;
             document.getElementById('jsonOutput').textContent = '// Заполните форму и нажмите кнопку';
-            toggleDepartmentFields();
         }
         
         document.getElementById('issueDate').valueAsDate = new Date();
